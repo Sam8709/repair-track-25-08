@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+  functions = "netlify/functions"
+
+# React SPA fallback so deep links (e.g., /dashboard, /track/...) work
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
