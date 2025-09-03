@@ -52,7 +52,8 @@ export function useJobs(session) {
         p_item_name: payload.item_name,
         p_problem: payload.problem,
         p_price: payload.price ?? 0,
-        p_job_description: payload.job_description ?? ''
+        p_job_description: payload.job_description ?? '',
+        p_request_id: payload._request_id || null
       });
 
     if (error) {
