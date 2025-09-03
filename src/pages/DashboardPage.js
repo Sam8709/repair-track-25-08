@@ -118,14 +118,19 @@ const DashboardPage = () => {
     return `RT-${year}-${next}`;
   };
 
-  const handleSubmitJob = async (e) => {
-    e.preventDefault();
+const [submitting, setSubmitting] = useState(false);
+
+const handleSubmitJob = async (e) => {
+  e.preventDefault();
+  if (submitting) return;
+  setSubmitting(true);
+
+  try {
     if (!profile) {
       toast.error('Please complete your profile first.');
       setProfileOpen(true);
       return;
     }
-
     if (!form.customer_name || !form.customer_whatsapp || !form.item_name || !form.problem) {
       toast.error('Please fill Customer Name, WhatsApp, Item Name, and Problem.');
       return;
@@ -140,8 +145,9 @@ const DashboardPage = () => {
       return;
     }
 
-    // Generate job_code
     const job_code = await generateJobCode();
+
+    const requestId = crypto.randomUUID(); // idempotency key [14]
 
     await createJob({
       customer_name: form.customer_name,
@@ -151,7 +157,8 @@ const DashboardPage = () => {
       price: priceNum,
       job_description: form.job_description,
       status: 'Received',
-      job_code
+      job_code,
+      _request_id: requestId // pass to hook
     });
 
     setForm({
@@ -162,7 +169,11 @@ const DashboardPage = () => {
       price: '',
       job_description: ''
     });
-  };
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   const handlePrintReceipt = async (job) => {
   try {
@@ -391,13 +402,13 @@ const DashboardPage = () => {
 
             <button
               type="submit"
-              disabled={!profile}
+              disabled={!profile || submitting}
               className={`text-white rounded px-4 py-2 ${
-                profile ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-300 cursor-not-allowed'
+              !profile || submitting ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
               }`}
-            >
-              Add Job
-            </button>
+              >
+          {submitting ? 'Adding…' : 'Add Job'}
+          </button>
           </form>
         </section>
 
